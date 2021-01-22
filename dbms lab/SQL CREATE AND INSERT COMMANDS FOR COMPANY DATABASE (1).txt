@@ -1,0 +1,112 @@
+SYNTAX of create command
+
+create table tablename
+(
+attribute1 datatype,
+attribute2 datatype,
+attribute3 datatype,
+.
+.
+.
+primary key(attibutename),
+foreign key(attributename) references tablename(attributename));
+
+create table employee
+(
+ssn int,
+name char(10),
+address varchar(10),
+sex char(10),
+salary int,
+superssn int,
+dno int,
+primary key(ssn),
+foreign key(superssn) references employee(ssn));
+
+
+create table department
+(
+dno int,
+dname char(20),
+mgrssn int,
+mgrstartdate date,
+primary key(dno),
+foreign key(mgrssn) references employee(ssn));
+
+
+
+create table dlocation
+(
+dno int,
+dloc char(10),
+primary key(dno,dloc),
+foreign key(dno) references department(dno));
+
+
+create table project
+(
+pno int,
+pname char(20),
+plocation char(10),
+dno int,
+primary key(pno),
+foreign key(dno) references department(dno));
+
+create table workson
+(
+ssn int,
+pno int,
+hours int,
+primary key(ssn,pno),
+foreign key(pno) references project(pno));
+
+
+
+syntax of insert command
+ insert into tablename values('value1','value2',......'valuen');
+
+Queries:
+
+1) Make a list of all project numbers for projects that involve an employee whose last name is ‘Scott’, either as a worker or as a manager of the department that controls the project.
+
+select w.pno
+from workson w, employee e
+where w.ssn=e.ssn and e.name='scott'
+union
+select w.pno
+from workson w, employee e,department d
+where w.ssn=e.ssn and d.mgrssn=e.ssn and e.name='scott';
+
+2) Show the resulting salaries if every employee working on the ‘IoT’ project is given a 10 percent raise. 
+
+select salary*1.1
+from employee e, workson w,project p
+where e.ssn=w.ssn and w.pno=p.pno and p.pname='IOT';
+
+3) Find the sum of the salaries of all employees of the ‘Accounts’ department, as well as the maximum salary, the minimum salary, and the average salary in this department. 
+
+select sum(e.salary),max(e.salary),min(e.salary),avg(e.salary)
+from employee e,department d
+where e.dno=d.dno and d.dname='Accounts';
+
+4) Retrieve the name of each employee who works on all the projects controlledby department number 5 (use NOT EXISTS operator). 
+
+select e.name
+from employee e
+where not exists(
+select p.pno
+from project p
+where p.dno=5
+minus
+select w.pno
+from workson w
+where w.ssn=e.ssn);
+
+5) For each department that has more than five employees, retrieve the department number  and the number of its employees who are making more than Rs. 6,00,000.
+
+select dno,count(*) 
+from employee e
+where salary>600000
+group by dno
+having count(*)>2
+

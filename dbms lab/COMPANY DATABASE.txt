@@ -1,0 +1,137 @@
+SYNTAX of create command
+
+create table tablename
+(
+attribute1 datatype,
+attribute2 datatype,
+attribute3 datatype,
+.
+.
+.
+primary key(attibutename),
+foreign key(attributename) references tablename(attributename));
+
+LAB5 SQL PROGRAM
+
+create table employee1
+(
+ssn int,
+name char(10),
+address varchar(10),
+sex char(10),
+salary int,
+superssn int,
+dno int,
+primary key(ssn),
+foreign key(superssn) references employee1(ssn));
+
+
+create table department1
+(
+dno int,
+dname char(20),
+mgrssn int,
+mgrstartdate date,
+primary key(dno),
+foreign key(mgrssn) references employee1(ssn));
+
+
+
+create table dlocation1
+(
+dno int,
+dloc char(10),
+primary key(dno,dloc),
+foreign key(dno) references department1(dno));
+
+
+create table project1
+(
+pno int,
+pname char(20),
+plocation char(10),
+dno int,
+primary key(pno),
+foreign key(dno) references department1(dno));
+
+create table workson1
+(
+ssn int,
+pno int,
+hours int,
+primary key(ssn,pno),
+foreign key(pno) references project1(pno));
+
+
+
+syntax of insert command
+ insert into tablename values('value1','value2',......'valuen');
+
+1)insert into employee1 values(1,'scott','bangalore','f',700000,NULL,5)
+
+2)insert into department1 values(5,'Accounts',1,'10-jan-2020');
+
+3) insert into dlocations1(5,'bangalore');
+
+4)insert into project1 values(100,'IOT','bangalore',5);
+
+5)insert into workson1 values(1,100,8);
+
+
+Queries:
+
+1) Make a list of all project numbers for projects that involve an employee whose last name is ‘Scott’, either as a worker or as a manager of the department that controls the project.
+
+select w.pno
+from workson1 w, employee1 e
+where w.ssn=e.ssn and e.name='scott'
+union
+select w.pno
+from workson1 w, employee1 e,department1 d
+where w.ssn=e.ssn and d.mgrssn=e.ssn and e.name='scott';
+
+2) Show the resulting salaries if every employee working on the ‘IoT’ project is given a 10 percent raise. 
+
+select salary*1.1
+from employee1 e, workson1 w,project1 p
+where e.ssn=w.ssn and w.pno=p.pno and p.pname='IOT';
+
+3) Find the sum of the salaries of all employees of the ‘Accounts’ department, as well as the maximum salary, the minimum salary, and the average salary in this department. 
+
+select sum(e.salary),max(e.salary),min(e.salary),avg(e.salary)
+from employee1 e,department1 d
+where e.dno=d.dno and d.dname='Accounts';
+
+4) Retrieve the name of each employee who works on all the projects controlledby department number 5 (use NOT EXISTS operator). 
+
+select e.name
+from employee1 e
+where not exists(
+select p.pno
+from project1 p
+where p.dno=5
+minus                                     
+select w.pno
+from workson1 w
+where w.ssn=e.ssn);
+
+5) For each department that has more than five employees, retrieve the department number  and the number of its employees who are making more than Rs. 6,00,000.
+
+select dno,count(*) 
+from employee1 e
+where salary>600000
+group by dno
+having count(*)>5;
+
+
+employee
+dno    salary                              5      count(*)=6
+5         7700000
+5          9898980
+5          4858485485
+5           66676767676
+5           4343434344
+5          777777777
+6          8888
+7          9999
+
